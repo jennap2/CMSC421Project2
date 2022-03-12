@@ -8,7 +8,7 @@
 
 char *command_loop(void);
 char **parse(char **input);
-void run_command(char *input);
+void run_command(char **input);
 
 #define ESCAPE_SEQUENCES " \t\r\n\a"
 
@@ -41,7 +41,7 @@ char *command_loop(void){
 }
 
 // Parse the user input string
-char **parse(char *input){
+char **parse(char **input){
 	int token_buff = 24;
 	char **tokens = malloc(token_buff * sizeof(char*));
 	char *token;
@@ -59,19 +59,23 @@ char **parse(char *input){
 	return tokens;
 }
 
+// Run command of the parsed input
 void run_command(char **input){
-	char **command;
+	char **command = input;
+	int status;
 	pid_t child_pid;
-	while(1){
-		command = get_input(input);
-		child_pid = fork();
-		if(child_pid == 0){
-			execvp(command[0], command);
-		}
-		else{
+	child_pid = fork();
+	if(child_pid == 0){
+		execvp(command[0], command);
+		exit(1);
+	}
+	else if(child_pid < 0){
+		fprintf(stderr, "Error: Fork Failed");
+		exit(1);
+	}
+	else{
+		do{
 			waitpid(child_pid, &status, WUNTRACED);
-		}
-		free(input);
-		free(command);
+		}while(!WIFSIGNALED(status) && !WIFEXITED(status));
 	}
 }
