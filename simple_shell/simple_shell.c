@@ -7,7 +7,8 @@
 #include "utils.h"
 
 char *command_loop(void);
-char **parse(char *input);
+char **parse(char **input);
+void run_command(char *input);
 
 #define ESCAPE_SEQUENCES " \t\r\n\a"
 
@@ -30,6 +31,7 @@ char *command_loop(void){
 			exit(0);
 		}
 		input_parsed = parse(input);
+		run_command(input_parsed);
 		for(int i = 0; i < pos; i++){
 			free(input_parsed[i]);
 		}
@@ -55,4 +57,21 @@ char **parse(char *input){
 		token = strtok(NULL, ESCAPE_SEQUENCES);
 	} while(token != NULL);
 	return tokens;
+}
+
+void run_command(char **input){
+	char **command;
+	pid_t child_pid;
+	while(1){
+		command = get_input(input);
+		child_pid = fork();
+		if(child_pid == 0){
+			execvp(command[0], command);
+		}
+		else{
+			waitpid(child_pid, &status, WUNTRACED);
+		}
+		free(input);
+		free(command);
+	}
 }
