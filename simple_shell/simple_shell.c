@@ -25,13 +25,17 @@ char *command_loop(void){
 	size_t buff = 24;
 	int pos = 0;
 	char *proc = "proc";
+	char *exit_prompt = "exit\n";
+	// Prompt user for command until user enters exit
 	do {
 		printf(">> ");
 		getline(&input, &buff, stdin);
-		if(strcmp(input, "exit\n") == 0){
+		// If user enters exit deallocate and exit
+		if(strcmp(input, exit_prompt) == 0){
 			free(input);
 			exit(0);
 		}
+		// Parse user input, if parsed input is a proc command call proc function
 		input_parsed = parse(input);
 		if(strcmp(input_parsed[0], proc) == 0){
 			run_proc(input_parsed);
@@ -39,11 +43,12 @@ char *command_loop(void){
 		else{
 			run_command(input_parsed);
 		}
+		// Deallocate parsed input
 		for(int i = 0; i < pos; i++){
 			free(input_parsed[i]);
 		}
 		free(input_parsed);
-	} while(input != "exit\n");
+	} while(input != exit_prompt);
 	return input;
 }
 
@@ -71,9 +76,11 @@ void run_command(char **input){
 	char **command = input;
 	int status;
 	pid_t child_pid;
+	// Create child process
 	child_pid = fork();
 	if(child_pid == 0){
 		execvp(command[0], command);
+		printf(stderr, "Error: Execvp Failed");
 		exit(1);
 	}
 	else if(child_pid < 0){
@@ -89,13 +96,16 @@ void run_command(char **input){
 
 // Displays proc files
 void run_proc(char **input){
+	// Checks that a file within /proc is specified 
 	if(input[1] != NULL){
 		char* file = input[1];
 		char begin[24] = "/proc/";
 		strcat(begin, file);
+		// Checks that it is accessible
 		if(access(begin, F_OK) == 0){
 			FILE *f = fopen(begin, "r");
-			char display = "c";
+			char display = " ";
+			// Prints out contents
 			while(display != EOF){
 				display = fgetc(f);
 				printf("%c", display);

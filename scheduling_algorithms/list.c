@@ -1,7 +1,7 @@
 /**
  * Various list operations
  */
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +12,7 @@
 
 // add a new task to the list of tasks
 void insert(struct node **head, Task *newTask) {
-    // add the new task to the list 
+    // add the new task to the list
     struct node *newNode = malloc(sizeof(struct node));
 
     newNode->task = newTask;
