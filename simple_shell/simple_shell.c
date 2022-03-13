@@ -7,8 +7,9 @@
 #include "utils.h"
 
 char *command_loop(void);
-char **parse(char **input);
+char **parse(char *input);
 void run_command(char **input);
+void run_proc(char **input);
 
 #define ESCAPE_SEQUENCES " \t\r\n\a"
 
@@ -23,6 +24,7 @@ char *command_loop(void){
 	char **input_parsed = NULL;
 	size_t buff = 24;
 	int pos = 0;
+	char *proc = "proc";
 	do {
 		printf(">> ");
 		getline(&input, &buff, stdin);
@@ -31,7 +33,12 @@ char *command_loop(void){
 			exit(0);
 		}
 		input_parsed = parse(input);
-		run_command(input_parsed);
+		if(strcmp(input_parsed[0], proc) == 0){
+			run_proc(input_parsed);
+		}
+		else{
+			run_command(input_parsed);
+		}
 		for(int i = 0; i < pos; i++){
 			free(input_parsed[i]);
 		}
@@ -41,7 +48,7 @@ char *command_loop(void){
 }
 
 // Parse the user input string
-char **parse(char **input){
+char **parse(char *input){
 	int token_buff = 24;
 	char **tokens = malloc(token_buff * sizeof(char*));
 	char *token;
@@ -70,12 +77,37 @@ void run_command(char **input){
 		exit(1);
 	}
 	else if(child_pid < 0){
-		fprintf(stderr, "Error: Fork Failed");
+		printf(stderr, "Error: Fork Failed");
 		exit(1);
 	}
 	else{
 		do{
 			waitpid(child_pid, &status, WUNTRACED);
 		}while(!WIFSIGNALED(status) && !WIFEXITED(status));
+	}
+}
+
+// Displays proc files
+void run_proc(char **input){
+	if(input[1] != NULL){
+		char* file = input[1];
+		char begin[24] = "/proc/";
+		strcat(begin, file);
+		if(access(begin, F_OK) == 0){
+			FILE *f = fopen(begin, "r");
+			char display = "c";
+			while(display != EOF){
+				display = fgetc(f);
+				printf("%c", display);
+			}
+			fclose(f);
+			printf("%s"," \n");
+		}
+		else{
+			printf("%s", "Error: could not open file");
+		}
+	}
+	else{
+		printf("Error: additional information needed");
 	}
 }
