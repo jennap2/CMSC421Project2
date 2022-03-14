@@ -29,19 +29,34 @@ void schedule(){
 // Run round robin
 void pickNextTask(){
 	reverseList();
-	struct node *tempHead = tempNode;
 	int quantum = 10;
-	int sliceArray[]
-	while(tempHead != NULL){
-		// Run
-		run(tempHead->task,tempHead->task->burst);
-        	// Remove
-		printf("Remove %s\n", tempHead->task->name);
-        	delete(&tempNode,tempHead->task);
+	int slice = 0;
+	// Loop through linked list until everything deleted
+	while(tempNode != NULL){
+		// Temp linked list to loop through 
+		struct node *loopHead = tempNode;
+		while(loopHead != NULL){
+			// Check if burst remaining is greater or less than time quantum
+			if(loopHead->task->burst < quantum){
+				// Run for remainder of burst
+				run(loopHead->task, loopHead->task->burst);
+				loopHead->task->burst -= loopHead->task->burst;
+				// Remove
+                		printf("Remove %s\n", loopHead->task->name);
+                		delete(&tempNode,loopHead->task);
+			}
+			else{
+				slice = loopHead->task->burst - quantum;
+				// Run
+				run(loopHead->task,quantum);
+				loopHead->task->burst = slice;
+			}
+			loopHead = loopHead->next;
+		}
 	}
 }
 
-// Recursively goes through linked list backwards 
+// Recursively goes through linked list backwards
 void reverseList(){
         struct node *currNode = tempNode;
 	struct node *prevNode = NULL, *nextNode = NULL;
