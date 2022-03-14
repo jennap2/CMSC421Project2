@@ -22,9 +22,9 @@ void add(char *name, int priority, int burst){
 
 // invoke the priority scheduler
 void schedule(){
-	printf("Linked list Displayed:\n");
-	traverse(tempNode);
-	printf("The Priority scheduling algorithm schedules tasks based on priority\n");
+	printf("\nTraverse the linked list:\n");
+        traverse(tempNode);
+	printf("\nThe Priority scheduling algorithm schedules tasks based on priority(Highest to Lowest)\n");
 	pickNextTask();
 }
 
@@ -35,14 +35,14 @@ void pickNextTask(){
 	while(tempNode != NULL){
         	int priorityHead = tempNode->task->priority;
 		while(tempHead != NULL){
-			if(priorityHead >= tempHead->task->priority){
+			if(priorityHead <= tempHead->task->priority){
 				priorityHead = tempHead->task->priority;
 				run_task = tempHead;
 			}
 			tempHead = tempHead->next;
         	}
 		run(run_task->task,run_task->task->burst);
-		printf("Remove %s\n", run_task->task->name);
+		printf("Next highest priority ran: remove %s\n", run_task->task->name);
 		delete(&tempNode,run_task->task);
 		tempHead = tempNode;
 	}

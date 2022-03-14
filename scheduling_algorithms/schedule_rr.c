@@ -21,8 +21,9 @@ void add(char *name, int priority, int burst){
 
 // invoke the rr scheduler
 void schedule(){
+	printf("\nTraverse the linked list:\n");
 	traverse(tempNode);
-	printf("The Round-Robin scheduling algorithm schedules tasks where each task in run for a time quantum (or for the remainder of its CPU burst)\n");
+	printf("\nThe Round-Robin scheduling algorithm schedules tasks where each task in run for a time quantum (or for the remainder of its CPU burst)\n");
 	pickNextTask();
 }
 
@@ -42,7 +43,7 @@ void pickNextTask(){
 				run(loopHead->task, loopHead->task->burst);
 				loopHead->task->burst -= loopHead->task->burst;
 				// Remove
-                		printf("Remove %s\n", loopHead->task->name);
+                		printf("Task completed: remove %s\n", loopHead->task->name);
                 		delete(&tempNode,loopHead->task);
 			}
 			else{
@@ -67,6 +68,7 @@ void reverseList(){
 		currNode = nextNode;
 	}
 	tempNode = prevNode;
-	printf("List reversed:\n");
+	printf("\nList reversed:\n");
 	traverse(tempNode);
+	printf("\n");
 }

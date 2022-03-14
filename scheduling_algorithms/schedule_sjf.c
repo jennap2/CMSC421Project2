@@ -20,8 +20,9 @@ void add(char *name, int priority, int burst){
 
 // invoke the sjf scheduler
 void schedule(){
-	traverse(tempNode);
-	printf("The Shortest-Job-First scheduling algorithm schedules tasks in order of the length of the tasks' next CPU burst\n");
+	printf("\nTraverse the linked list:\n");
+        traverse(tempNode);
+	printf("\nThe Shortest-Job-First scheduling algorithm schedules tasks in order of the length of the tasks' next CPU burst\n");
 	pickNextTask();
 }
 
@@ -39,7 +40,7 @@ void pickNextTask(){
                         tempHead = tempHead->next;
                 }
                 run(run_task->task,run_task->task->burst);
-                printf("Remove %s\n", run_task->task->name);
+                printf("Next highest burst ran: remove %s\n", run_task->task->name);
                 delete(&tempNode,run_task->task);
                 tempHead = tempNode;
         }

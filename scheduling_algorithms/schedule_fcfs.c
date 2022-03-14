@@ -21,8 +21,9 @@ void add(char *name, int priority, int burst){
 
 // invoke the fcfs scheduler
 void schedule(){
+	printf("\nTraverse the linked list:\n");
 	traverse(tempNode);
-	printf("The First-Come, First-Served scheduling algorithm schedules tasks in the order in which they request the CPU\n");
+	printf("\nThe First-Come, First-Served scheduling algorithm schedules tasks in the order in which they request the CPU\n");
 	pickNextTask();
 }
 
@@ -39,6 +40,6 @@ void recursiveBackwards(struct node* headPoint){
         }
 	recursiveBackwards(headPoint->next);
         run(headPoint->task,headPoint->task->burst);
-        printf("Remove %s\n", headPoint->task->name);
+        printf("Next request to CPU ran: remove %s\n", headPoint->task->name);
         delete(&tempNode,headPoint->task);
 }
