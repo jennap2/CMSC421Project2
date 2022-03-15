@@ -1,17 +1,16 @@
 #include <unistd.h>
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include "utils.h"
 
-char *command_loop(void);
+void command_loop();
 char **parse(char *input);
 void run_command(char **input);
 void run_proc(char **input);
 
-#define ESCAPE_SEQUENCES " \t\r\n\a"
+#define ESCAPE_SEQUENCES " \t\r\n\a\b\v\f"
 
 int main(int argc, char *argv[]){
 	command_loop();
@@ -19,17 +18,16 @@ int main(int argc, char *argv[]){
 }
 
 // Get input from the user
-char *command_loop(void){
+void command_loop(){
 	char *input = NULL;
 	char **input_parsed = NULL;
-	size_t buff = 24;
-	int pos = 0;
+	size_t holder = 24;
 	char *proc = "proc";
 	char *exit_prompt = "exit\n";
 	// Prompt user for command until user enters exit
 	do {
 		printf(">> ");
-		getline(&input, &buff, stdin);
+		getline(&input, &holder, stdin);
 		// If user enters exit deallocate and exit
 		if(strcmp(input, exit_prompt) == 0){
 			free(input);
@@ -43,28 +41,25 @@ char *command_loop(void){
 		else{
 			run_command(input_parsed);
 		}
-		// Deallocate parsed input
-		for(int i = 0; i < pos; i++){
-			free(input_parsed[i]);
-		}
 		free(input_parsed);
 	} while(input != exit_prompt);
-	return input;
 }
 
 // Parse the user input string
 char **parse(char *input){
-	int token_buff = 24;
-	char **tokens = malloc(token_buff * sizeof(char*));
 	char *token;
-	int pos = 0;
+	int token_hold = 24;
+	char **tokens = malloc(token_hold * sizeof(char*));
+	int position = 0;
 	token = strtok(input, ESCAPE_SEQUENCES);
+	// Loop through user input breaking string into tokens
 	do {
-		tokens[pos] = token;
-		pos++;
-		if(pos  >= token_buff){
-			token_buff += 24;
-			tokens = realloc(tokens, token_buff * sizeof(char*));
+		tokens[position] = token;
+		position++;
+		// Reallocate space if needed
+		if(position >= token_hold){
+			token_hold += 24;
+			tokens = realloc(tokens, token_hold * sizeof(char*));
 		}
 		token = strtok(NULL, ESCAPE_SEQUENCES);
 	} while(token != NULL);
@@ -75,22 +70,20 @@ char **parse(char *input){
 void run_command(char **input){
 	char **command = input;
 	int status;
-	pid_t child_pid;
-	// Create child process
-	child_pid = fork();
-	if(child_pid == 0){
+	pid_t c_pid;
+	// Create child process and check if successful
+	c_pid = fork();
+	if(c_pid == 0){
 		execvp(command[0], command);
-		printf(stderr, "Error: Execvp Failed");
+		fprintf(stderr, "Error: Execvp Failed");
 		exit(1);
 	}
-	else if(child_pid < 0){
-		printf(stderr, "Error: Fork Failed");
+	else if(c_pid < 0){
+		fprintf(stderr, "Error: Fork Failed");
 		exit(1);
 	}
 	else{
-		do{
-			waitpid(child_pid, &status, WUNTRACED);
-		}while(!WIFSIGNALED(status) && !WIFEXITED(status));
+		waitpid(c_pid, &status, WUNTRACED);
 	}
 }
 
@@ -99,25 +92,26 @@ void run_proc(char **input){
 	// Checks that a file within /proc is specified 
 	if(input[1] != NULL){
 		char* file = input[1];
-		char begin[24] = "/proc/";
-		strcat(begin, file);
+		char loc[] = "/proc/";
+		strcat(loc, file);
 		// Checks that it is accessible
-		if(access(begin, F_OK) == 0){
-			FILE *f = fopen(begin, "r");
-			char display = " ";
-			// Prints out contents
+		if(access(loc, F_OK) != -1){
+			FILE *f = fopen(loc, "r");
+			char display;
+			display = fgetc(f);
+			// Prints out contents until end of file
 			while(display != EOF){
-				display = fgetc(f);
 				printf("%c", display);
+				display = fgetc(f);
 			}
 			fclose(f);
-			printf("%s"," \n");
+			printf("\n");
 		}
 		else{
-			printf("%s", "Error: could not open file");
+			fprintf(stderr, "Error: could not access file");
 		}
 	}
 	else{
-		printf("Error: additional information needed");
+		fprintf(stderr, "Error: additional information needed");
 	}
 }
