@@ -22,7 +22,7 @@ void add(char *name, int priority, int burst){
 void schedule(){
 	printf("\nTraverse the linked list:\n");
         traverse(tempNode);
-	printf("\nThe Shortest-Job-First scheduling algorithm schedules tasks in order of the length of the tasks' next CPU burst\n");
+	printf("\nThe Shortest-Job-First scheduling algorithm schedules tasks in order of least to greatest length of the tasks CPU burst\n");
 	pickNextTask();
 }
 
@@ -31,16 +31,19 @@ void pickNextTask(){
         struct node* tempHead = tempNode;
         struct node* run_task = tempNode;
         while(tempNode != NULL){
+		// Loop through temp list
                 int burstHead = tempNode->task->burst;
                 while(tempHead != NULL){
+			// Find highest burst
                         if(burstHead >= tempHead->task->burst){
                                 burstHead = tempHead->task->burst;
                                 run_task = tempHead;
                         }
                         tempHead = tempHead->next;
                 }
+		// Run and remove
                 run(run_task->task,run_task->task->burst);
-                printf("Next highest burst ran: remove %s\n", run_task->task->name);
+                printf("Next lowest burst ran: remove %s\n", run_task->task->name);
                 delete(&tempNode,run_task->task);
                 tempHead = tempNode;
         }

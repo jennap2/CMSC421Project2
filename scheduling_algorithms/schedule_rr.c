@@ -61,6 +61,7 @@ void pickNextTask(){
 void reverseList(){
         struct node *currNode = tempNode;
 	struct node *prevNode = NULL, *nextNode = NULL;
+	// Loop and switch nodes
 	while(currNode != NULL){
 		nextNode = currNode->next;
 		currNode->next = prevNode;
